@@ -1,0 +1,58 @@
+version: "1.2"
+description: "AI Wearable Telemetry Severity Taxonomy"
+
+severity_tiers:
+  S0_CRITICAL:
+    level: 0
+    description: "Credible risk of harm, widespread disabling failures, or severe PII exposure."
+    auto_escalate: true
+    triggers:
+      system:
+        - metric: "crash_rate"
+          threshold: "> 5%"
+          window: "10m"
+      ai_model:
+        - category: "data_privacy"
+          metric: "pii_leakage_confidence"
+          threshold: "> 0.95"
+        - category: "safety"
+          metric: "dangerous_content_flag"
+          threshold: "boolean_true"
+
+  S1_HIGH:
+    level: 1
+    description: "Major functionality degraded, frequent crashes, or severe latency regressions."
+    auto_escalate: true
+    triggers:
+      system:
+        - metric: "p99_end_to_end_latency"
+          threshold: "> 1500ms"
+          window: "5m"
+      ai_model:
+        - category: "confabulation"
+          metric: "hallucination_score"
+          threshold: "> 0.80"
+
+  S2_MEDIUM:
+    level: 2
+    description: "Intermittent failures or localized regressions requiring scheduled fixes."
+    auto_escalate: false
+    triggers:
+      system:
+        - metric: "p50_end_to_end_latency"
+          threshold: "> 800ms"
+          window: "30m"
+      ai_model:
+        - category: "human_ai_configuration"
+          metric: "over_reliance_warning"
+          threshold: "> 0.60"
+
+  S3_LOW:
+    level: 3
+    description: "Minor defects, cosmetic issues, or log-only anomalies."
+    auto_escalate: false
+    triggers:
+      system:
+        - metric: "retry_rate"
+          threshold: "> 2%"
+          window: "1h"
