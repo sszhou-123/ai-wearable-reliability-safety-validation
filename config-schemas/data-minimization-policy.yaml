@@ -1,0 +1,32 @@
+version: "1.0"
+description: "Telemetry Sanitization and Redaction Rules"
+
+minimization_rules:
+  global_redaction:
+    enabled: true
+    drop_raw_audio: true
+    drop_raw_images: true
+    
+  text_sanitization:
+    - field_pattern: "user_reported_description"
+      regex_redact:
+        - pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+          replacement: "[REDACTED_SSN]"
+        - pattern: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"
+          replacement: "[REDACTED_EMAIL]"
+
+  metadata_retention:
+    allowed_fields:
+      - "incident_id"
+      - "timestamp"
+      - "device_family"
+      - "os_version"
+      - "model_version"
+      - "coarse_device_state"
+      - "error_codes"
+      
+  retention_window:
+    S0_CRITICAL: "365d"
+    S1_HIGH: "90d"
+    S2_MEDIUM: "30d"
+    S3_LOW: "14d"
