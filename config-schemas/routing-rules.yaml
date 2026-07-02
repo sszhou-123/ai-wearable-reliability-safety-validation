@@ -1,0 +1,32 @@
+version: "1.1"
+description: "Ingestion Engine Routing and Triage Rules"
+
+routing_policies:
+  - name: "critical_safety_halt"
+    match:
+      severity: ["S0_CRITICAL"]
+      source: ["auto-detected", "user-submitted"]
+    actions:
+      - type: "publish_to_queue"
+        target: "kafka_topic:wearable-incident-s0"
+      - type: "webhook"
+        endpoint: "https://api.internal.org/v1/rollout/halt"
+        payload_subset: ["incident_id", "product_context", "issue_summary"]
+
+  - name: "high_priority_investigation"
+    match:
+      severity: ["S1_HIGH"]
+    actions:
+      - type: "publish_to_queue"
+        target: "kafka_topic:wearable-incident-s1"
+      - type: "pagerduty_alert"
+        escalation_policy: "ep_ai_wearable_triage"
+
+  - name: "standard_backlog"
+    match:
+      severity: ["S2_MEDIUM", "S3_LOW"]
+    actions:
+      - type: "publish_to_queue"
+        target: "kafka_topic:wearable-incident-standard"
+      - type: "create_ticket"
+        board: "wearable_quality_assurance"
